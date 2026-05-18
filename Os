@@ -1,1 +1,176 @@
 
+1
+#!/bin/bash
+
+sum=0
+
+echo "Non-directory files in current directory:"
+
+for file in *
+do
+    if [ -f "$file" ]
+    then
+        echo "$file"
+
+        size=$(wc -c < "$file")
+        sum=$((sum + size))
+    fi
+done
+
+echo "Total size of all non-directory files = $sum bytes"
+
+2
+#!/bin/bash
+
+echo "Before fork"
+
+(
+    echo "Child Process"
+    echo "Child PID = $$"
+    echo "Parent PID = $PPID"
+) &
+
+echo "Parent Process"
+echo "Parent PID = $$"
+
+wait
+
+3
+#!/bin/bash
+
+for pid in $(ps -e -o pid=)
+do
+    if [ $((pid % 2)) -eq 0 ]
+    then
+        kill -9 $pid 2>/dev/null
+        echo "Killed process with PID $pid"
+    fi
+done
+
+4
+#!/bin/bash
+
+(
+    sleep 5
+    echo "Child Process"
+    echo "PID = $$"
+    echo "PPID = $PPID"
+) &
+
+echo "Parent exiting..."
+exit
+
+5
+#!/bin/bash
+
+(
+    echo "Child process exited"
+    exit
+) &
+
+sleep 20
+
+echo "Parent awake after sleep"
+
+6
+#!/bin/bash
+
+global=10
+
+function test()
+{
+    local localvar=20
+
+    (
+        global=$((global + 1))
+        localvar=$((localvar + 1))
+
+        echo "Child Process:"
+        echo "Global = $global"
+        echo "Local = $localvar"
+    )
+
+    echo "Parent Process:"
+    echo "Global = $global"
+    echo "Local = $localvar"
+}
+
+test
+
+7
+#!/bin/bash
+
+(
+    for i in {1..5}
+    do
+        echo "System Information:"
+        uname -a
+        date
+        sleep 10
+    done
+) &
+
+echo "Background process started"
+
+8
+#!/bin/bash
+
+count=1
+
+while [ $count -le 5 ]
+do
+    echo "Process List - Iteration $count"
+    ps -e
+
+    sleep 30
+    count=$((count + 1))
+done
+
+9
+
+#!/bin/bash
+
+child_process() {
+    for i in {1..10}
+    do
+        echo "Number: $i | PID: $$ | PPID: $PPID"
+        sleep 1
+    done
+}
+
+child_process &
+pid1=$!
+
+child_process &
+pid2=$!
+
+wait $pid1
+wait $pid2
+
+echo "Good Bye"
+
+10
+#!/bin/bash
+
+# First Child Process
+(
+    echo "First Child Process"
+    ls
+) &
+
+# Second Child Process
+(
+    echo "Second Child Process"
+    who
+) &
+
+# Third Child Process
+(
+    echo "Third Child Process"
+    date
+) &
+
+# Parent waits for all child processes
+wait
+
+echo "All child processes finished"
